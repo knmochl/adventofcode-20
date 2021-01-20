@@ -22,7 +22,18 @@
     (and (>= letter-count (:min password-info))
          (<= letter-count (:max password-info)))))
 
+(defn validate-toboggan-password
+  [password-info]
+  (let [pos1 (= (:char password-info) (nth (:password password-info) (dec (:min password-info))))
+        pos2 (= (:char password-info) (nth (:password password-info) (dec (:max password-info))))]
+    (and (or pos1 pos2) (not (and pos1 pos2)))))
+
 (defn part1
   []
   (let [passwords (map parse-line (slurp-lines "input2.txt"))]
     (count (filter validate-password passwords))))
+
+(defn part2
+  []
+  (let [passwords (map parse-line (slurp-lines "input2.txt"))]
+    (count (filter validate-toboggan-password passwords))))
