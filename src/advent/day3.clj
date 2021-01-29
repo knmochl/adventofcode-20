@@ -39,3 +39,9 @@
   []
   (let [trees (slurp-lines "input3.txt")]
     (count-trees trees 3 1)))
+
+(defn part2
+  []
+  (let [trees (slurp-lines "input3.txt")
+        slopes [[1 1] [3 1] [5 1] [7 1] [1 2]]]
+    (apply * (map (partial apply count-trees trees) slopes))))
