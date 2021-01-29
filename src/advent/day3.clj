@@ -25,7 +25,7 @@
 (defn coord-path
   [trees dx dy]
   (letfn [(move [[x y]] [(+ x dx) (+ y dy)])]
-    (take (count trees) (iterate move [1 1]))))
+    (take-while #(<= (second %) (count trees)) (iterate move [1 1]))))
 
 (defn trees-on-path
   [trees coords]
@@ -38,4 +38,4 @@
 (defn part1
   []
   (let [trees (slurp-lines "input3.txt")]
-    (count (filter true? (trees-on-path trees (coord-path trees 3 1))))))
+    (count-trees trees 3 1)))
