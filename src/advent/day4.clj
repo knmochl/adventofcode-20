@@ -1,6 +1,7 @@
 (ns advent.day4
   (:require [advent.util :refer [slurp-lines]]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [clojure.edn :as edn]))
 
 (def test-input [
  "ecl:gry pid:860033327 eyr:2020 hcl:#fffffd"
@@ -40,10 +41,62 @@
   [input]
   (mapv make-passport (split-passports input)))
 
-(defn passport-valid?
+(defn passport-has-fields?
   [passport]
   (= 0 (count (filter nil? (map #(% passport) required-fields)))))
 
+(defn is-year?
+  [year]
+  (re-matches #"^\d{4}$" year))
+
+(defn validate-year
+  [year-string min-year max-year]
+  (if (is-year? year-string)
+    (let [year (edn/read-string year-string)]
+      (and (<= min-year year) (>= max-year year)))
+    nil))
+
+(defn validate-hair-color
+  [hcl]
+  (re-matches #"^#[0-9a-f]{6}$" hcl))
+
+(defn validate-passport-id
+  [pid]
+  (re-matches #"^\d{9}$" pid))
+
+(defn validate-eye-color
+  [ecl]
+  (let [possible ["amb" "blu" "brn" "gry" "grn" "hzl" "oth"]]
+    (seq (filter #(= ecl %) possible))))
+
+(defn validate-height
+  [hgt]
+  (if (re-matches #"^\d+[a-z]{2}$" hgt)
+    (let [len (count hgt)
+          start (- len 2)
+          units (subs hgt start)
+          height (edn/read-string (subs hgt 0 start))]
+      (case units
+        "cm" (and (<= 150 height) (>= 193 height))
+        "in" (and (<= 59 height) (>= 76 height))
+        false))
+    false))
+
+(defn validate-passport
+  [passport]
+  (boolean (and (passport-has-fields? passport)
+                (validate-year (:byr passport) 1920 2002)
+                (validate-year (:iyr passport) 2010 2020)
+                (validate-year (:eyr passport) 2020 2030)
+                (validate-height (:hgt passport))
+                (validate-hair-color (:hcl passport))
+                (validate-eye-color (:ecl passport))
+                (validate-passport-id (:pid passport)))))
+
 (defn part1
   []
-  (count (filter true? (mapv passport-valid? (parse-passports (slurp-lines "input4.txt"))))))
+  (count (filter true? (mapv passport-has-fields? (parse-passports (slurp-lines "input4.txt"))))))
+
+(defn part2
+  []
+  (count (filter true? (mapv validate-passport (parse-passports (slurp-lines "input4.txt"))))))
