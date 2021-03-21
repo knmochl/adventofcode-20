@@ -34,8 +34,27 @@
   [[row col]]
   (+ (* row 8) col))
 
+(defn zip-seat-pairs
+  [seats]
+  (map vector seats (drop 1 seats)))
+
+(defn seats-adjacent?
+  [[seat1 seat2]]
+  (= 1 (Math/abs (- (seat-id seat1) (seat-id seat2)))))
+
 (defn part1
   []
   (apply max
          (map (comp seat-id decode-seat)
               (slurp-lines "input5.txt"))))
+
+(defn part2
+  []
+  (+ 1 (seat-id
+        (first
+         (first
+          (drop-while seats-adjacent?
+                      (zip-seat-pairs
+                       (sort-by seat-id
+                                (map decode-seat
+                                     (slurp-lines "input5.txt"))))))))))
