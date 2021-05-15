@@ -34,6 +34,10 @@
   [question-sets]
   (apply set/union question-sets))
 
+(defn everyone-answered
+  [question-sets]
+  (apply set/intersection question-sets))
+
 (defn count-answers
   [answer-set]
   (count answer-set))
@@ -41,4 +45,9 @@
 (defn part1
   []
   (reduce + (map (comp count-answers anyone-answered combine-questions)
+                 (split-groups (slurp-lines "input6.txt")))))
+
+(defn part2
+  []
+  (reduce + (map (comp count-answers everyone-answered combine-questions)
                  (split-groups (slurp-lines "input6.txt")))))
