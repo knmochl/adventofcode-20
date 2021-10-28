@@ -46,7 +46,17 @@
     (concat outer
             (mapcat (partial find-containers rules) outer))))
 
+(defn count-bags
+  [rules bag]
+  (let [bag-list (rules bag)]
+    (reduce + (mapcat #(vector (first %) (* (first %) (count-bags rules (second %)))) bag-list))))
+
 (defn part1
   []
   (let [rules (parse-rules (slurp-lines "input7.txt"))]
     (count (set (find-containers rules "shiny gold")))))
+
+(defn part2
+  []
+  (let [rules (parse-rules (slurp-lines "input7.txt"))]
+    (count-bags rules "shiny gold")))
