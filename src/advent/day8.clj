@@ -33,12 +33,38 @@
 
 (defn run-computer
   [computer visited]
-  (if (contains? visited (computer :ip))
+  (if (or (= (computer :ip) (count (computer :code)))
+          (contains? visited (computer :ip)))
     computer
     (recur (process-instruction computer) (conj visited (computer :ip)))))
+
+(defn swap-jmp-nop
+  [value]
+  (case value
+    :jmp :nop
+    :nop :jmp
+    :acc :acc))
+
+(defn modify-code
+  [code pos]
+  (update-in code [pos 0] swap-jmp-nop))
+
+(defn attempt-code-fix
+  [code pos]
+  (let [new-code (modify-code code pos)
+        new-computer (make-computer new-code)
+        result-computer (run-computer new-computer #{})]
+    (if (= (result-computer :ip) (count (result-computer :code)))
+      result-computer
+      (recur code (inc pos)))))
 
 (defn part1
   []
   (let [code (map parse-instruction (slurp-lines "input8.txt"))
         computer (make-computer code)]
     (:acc (run-computer computer #{}))))
+
+(defn part2
+  []
+  (let [code (mapv parse-instruction (slurp-lines "input8.txt"))]
+    (:acc (attempt-code-fix code 0))))
