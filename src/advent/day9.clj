@@ -31,7 +31,21 @@
         (find-first-invalid (drop 1 coll) preamble-size)
         value))))
 
+(defn find-weakness
+  [coll invalid]
+  (let [sums (take-while (partial >= invalid) (reductions + coll))
+        length (count sums)]
+    (if (= (last sums) invalid)
+      [(apply min (take length coll)) (apply max (take length coll))]
+      (find-weakness (drop 1 coll) invalid))))
+
 (defn part1
   []
   (let [codes (map edn/read-string (slurp-lines "input9.txt"))]
     (find-first-invalid codes 25)))
+
+(defn part2
+  []
+  (let [codes (map edn/read-string (slurp-lines "input9.txt"))
+        invalid (find-first-invalid codes 25)]
+    (apply + (find-weakness codes invalid))))
