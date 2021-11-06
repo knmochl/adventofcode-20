@@ -9,13 +9,31 @@
   [coll]
   (let [adaptors (sort coll)
         device (+ 3 (last adaptors))]
-    (frequencies
-     (map -
-          (conj (vec adaptors) device)
-          (cons 0 adaptors)))))
+    (map -
+         (conj (vec adaptors) device)
+         (cons 0 adaptors))))
+
+(defn count-runs
+  [coll result]
+  (let [drop-threes (drop-while (partial = 3) coll)
+        run (count (take-while (partial = 1) drop-threes))
+        rest (drop-while (partial = 1) drop-threes)]
+    (if (empty? rest)
+      result
+      (count-runs rest (conj result run)))))
+
+(defn possible-combos
+  [run-length]
+  (+ 1 (/ (* run-length (dec run-length)) 2)))
 
 (defn part1
   []
   (let [adaptors (map edn/read-string (slurp-lines "input10.txt"))
-        differences (get-differences adaptors)]
+        differences (frequencies (get-differences adaptors))]
     (* (differences 1) (differences 3))))
+
+(defn part2
+  []
+  (let [adaptors (map edn/read-string (slurp-lines "input10.txt"))
+        differences (get-differences adaptors)]
+    (apply * (map possible-combos (count-runs differences [])))))
