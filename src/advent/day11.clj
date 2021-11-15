@@ -38,7 +38,7 @@
                            (for [a [-1 0 1] b [-1 0 1]] [a b]))]
     (map (partial get-neighbor chart [x y]) directions)))
 
-(defn new-state
+(defn new-state-theory
   [chart x y]
   (let [adjacent (neighbors chart x y)
         current (get-neighbor chart [x y] [0 0])]
@@ -48,20 +48,20 @@
       :else current)))
 
 (defn step-automaton
-  [chart]
+  [algorithm chart]
   (mapv (partial apply str)
         (partition (chart-width chart)
-                   (mapv #(apply new-state chart %)
+                   (mapv #(apply algorithm chart %)
                          (for [y (range 1 (inc (chart-height chart)))
                                x (range 1 (inc (chart-width chart)))]
                            [x y])))))
 
 (defn run-to-steady-state
-  [chart]
-  (let [new-chart (step-automaton chart)]
+  [algorithm chart]
+  (let [new-chart (step-automaton algorithm chart)]
     (if (= chart new-chart)
       chart
-      (run-to-steady-state new-chart))))
+      (run-to-steady-state algorithm new-chart))))
 
 (defn count-occupied-seats-in-row
   [chart-row]
@@ -74,4 +74,4 @@
 (defn part1
   []
   (let [seating-chart (slurp-lines "input11.txt")]
-    (count-occupied-seats (run-to-steady-state seating-chart))))
+    (count-occupied-seats (run-to-steady-state new-state-theory seating-chart))))
