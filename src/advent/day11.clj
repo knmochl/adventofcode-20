@@ -29,14 +29,28 @@
         new-y (+ y dy)]
     (if (or (= new-x 0) (= new-y 0)
             (> new-x (chart-width chart)) (> new-y (chart-height chart)))
-      \.
+      \X
       (nth (nth chart (dec new-y)) (dec new-x)))))
+
+(defn find-neighbor-in-direction
+  [chart [x y] [dx dy]]
+  (let [new-x (+ x dx)
+        new-y (+ y dy)
+        neighbor (get-neighbor chart [x y] [dx dy])]
+    (case neighbor
+      \L neighbor
+      \# neighbor
+      \X neighbor
+      (find-neighbor-in-direction chart [new-x new-y] [dx dy]))))
+
+(defn directions
+  []
+  (filter (partial not= [0 0])
+          (for [a [-1 0 1] b [-1 0 1]] [a b])))
 
 (defn neighbors
   [chart x y]
-  (let [directions (filter (partial not= [0 0])
-                           (for [a [-1 0 1] b [-1 0 1]] [a b]))]
-    (map (partial get-neighbor chart [x y]) directions)))
+  (map (partial get-neighbor chart [x y]) (directions)))
 
 (defn new-state-theory
   [chart x y]
@@ -45,6 +59,15 @@
     (cond
       (and (= current \L) (not-any? (partial = \#) adjacent)) \#
       (and (= current \#) (<= 4 (count (filter (partial = \#) adjacent)))) \L
+      :else current)))
+
+(defn new-state-practice
+  [chart x y]
+  (let [current (get-neighbor chart [x y] [0 0])
+        adjacent (map (partial find-neighbor-in-direction chart [x y]) (directions))]
+    (cond
+      (and (= current \L) (not-any? (partial = \#) adjacent)) \#
+      (and (= current \#) (<= 5 (count (filter (partial = \#) adjacent)))) \L
       :else current)))
 
 (defn step-automaton
@@ -75,3 +98,8 @@
   []
   (let [seating-chart (slurp-lines "input11.txt")]
     (count-occupied-seats (run-to-steady-state new-state-theory seating-chart))))
+
+(defn part2
+  []
+  (let [seating-chart (slurp-lines "input11.txt")]
+    (count-occupied-seats (run-to-steady-state new-state-practice seating-chart))))
